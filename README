@@ -1,0 +1,141 @@
+PREDESCU Maria
+GRUPA 334CB
+
+	:::::::::  ::::::::::     :::     :::::::::  ::::    ::::  :::::::::: 
+	:+:    :+: :+:          :+: :+:   :+:    :+: +:+:+: :+:+:+ :+:        
+	+:+    +:+ +:+         +:+   +:+  +:+    +:+ +:+ +:+:+ +:+ +:+        
+	+#++:++#:  +#++:++#   +#++:++#++: +#+    +:+ +#+  +:+  +#+ +#++:++#   
+	+#+    +#+ +#+        +#+     +#+ +#+    +#+ +#+       +#+ +#+        
+	#+#    #+# #+#        #+#     #+# #+#    #+# #+#       #+# #+#        
+	###    ### ########## ###     ### #########  ###       ### ########## 
+
+
+------------------------------------TEMA LFA-----------------------------------
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>PARSAREA UNUI PROGRAM IMP(AST)<<<<<<<<<<<<<<<<<<<<<<<
+
+FISIERUL Expression.java
+	
+	Contine clase pentru fiecare tip de noduri ce pot sa apara in arborele de
+parsare pentru un program IMP.
+	->Interfata abstracta Expression care contine doua metode ce vor fi suprascrise
+de clasele de mai jos ce o vor implementa:
+		-metoda show(), necesara pentru a afisa nodurile din arborele de parsare
+		-metoda interpret(), necesara pentru a interpreta programul, dar care nu
+		a mai fost realizata in cele din urma
+	->Clasa MainNode pentru radacina arborelui, al carei constructor primeste
+parametru o expresie ce reprezinta arborele programului dat. MainNode este 
+adaugat atunci cand se ajunge la finalul fisierului din care este citit inputul.
+Tot atunci, de pe stiva pe care au fost puse elementele programului odata ce au
+fost parsate acestea sunt extrase si grupate cu ajutorul clasei SequenceNode.
+	->Clasa SequenceNode, al carei constructor primeste ca parametrii doua
+expresii, ne ajuta sa grupam elementele programului in arborele de parsare, astfel
+incat fiecare nod (in afara de radacina) sa aiba cate doi copii. Dupa cum am
+precizat mai devreme aceasta grupare are loc la final, dupa ce pe stiva se afla
+toate elementele programului parsat.
+	->Clasa IntNode pentru a reprezenta o valoare numerica
+	->Clasa BoolNode pentru a reprezenta o valoare booleana
+	->Clasa VarNode pentru a reprezenta o variabila
+	->Clasa PlusNode al carei constructor primeste ca parametrii doua expresii
+reprezentand expresiile aritmentice ce sunt adunate in program
+	->Clasa DivNode al carei constructor primeste ca parametrii doua expresii 
+reprezentand expresiile aritmetice ce sunt impartite in program
+	->Clasa BracketNode al carei constructor primeste ca parametru o expresie 
+ce reprezinta expresia aritmetica sau booleana ce se afla in interiorul prantezelor
+	->Clasa BlockNode al carei constructor primeste ca parametru o expresie ce
+reprezinta ceea ce se afla in interiorul unui bloc. Daca aceasta expresie este null
+inseamna ca este vorba despre un bloc gol
+	->Clasa AndNode al carei constructor primeste ca parametrii doua expresii ce
+reprezinta expresiile booleene intre care se face si logic
+	->Clasa GreaterNode al carei constructor primeste ca parametrii doua expresii ce
+reprezinta expresiile aritmetice care sunt comparate
+	->Clasa NotNode al carei constructor primeste ca parametru o expresie ce reprezinta
+expresia booleana care este negata in program
+	->Clasa AssignmentNode al carei constructor primeste ca parametrii un VarNode si
+o expresie, reprezentand variabila si expresia aritmetica care ii este asignata acesteia
+	->Clasa IfNode al carei constructor primeste ca parametrii o expresie si doua 
+variabile de tipul BlockNode care reprezinta cele trei elemente necesare pentru a 
+defini un statement if
+	->Clasa WhileNode al carei constructor primeste ca parametrii o expresie si o
+variabila de tipul BracketNode care reprezinta cele doua elemente ce contribuie la
+formarea unui statement while
+	->Clasa Symbol al carei constructor primeste ca parametru un String. Aceasta
+este folosita pentru a putea adauga pe stiva simboluri precum "=", "+", "/", "if",
+"while" etc., care ajuta la delimitarea anumitor tipuri de elemente ale programului.
+	
+FISIERUL Main.java
+	
+	Este fisierul in care se afla metoda principala, in care sunt citite datele din
+fisierul de input, este creata o instanta a clase ExpressionFlexLexer pentru
+a parsa datele primite (un program in IMP), iar apoi arborele de parsare al 
+programului dat este scris in fisierul "arbore" cu ajutorul metodei show().
+
+FISIERUL ExpressionFlex.flex
+	
+	In scrierea acestui fisier am inceput prin a declara expresiile regulate ce
+vor ajuta la parsarea inputului. Astfel, am declarat expresii regulate pentru ca
+parserul meu sa recunoasca atat cuvinte cheie din input precum "int", if", "else",
+"while", "true" sau "false", dar si simboluri ajutatoare ("=", "(", ")", "{" etc.).
+	Apoi am completat sectiunea de reguli, astfel ca pentru fiecare cuvant ce
+satisface o expresie regulata definita in sectiunea anterioara programul executa
+anumite actiuni.
+	Exista 5 functii ce au fost definite in sectiunea separata de %{ }% care m-au
+ajutat in parsarea corecta a inputului.	Acestea sunt apelate cand se intalneste
+";" (solve_assignement sau varList), ")" (close_bracket), "}" (close_block) sau cand
+se ajunge la finalul fisierului de input(build_tree). Pentru restul simbolurilor
+se adauga pe stack simbolul respectiv cu ajutorul clasei Symbol, iar pentru valorile
+numerice, numele de variabile sau variabile booleene se foloseste functia yytext()
+pentru ca acestea sa fie puse pe stack.
+	Cele 5 functii precizate mai sus ajuta la manipularea expresiilor puse pe stack
+prin comasarea lor pana se ajunge ca pe stiva sa fie doar o expresie, si anume
+una de tipul MainNode in care este continut tot arborele de parsare al programului.
+	
+	1.FUNCTIA varList()
+	Este apelata in momentul in care se intalneste simbolul ";", iar ArrayList-ul
+varList in care se retine lista de variabile de la inceputul fiecarui program este
+gol. Acest lucru inseamna ca ne aflam la finalul primei linii din fisierul de input,
+iar pe stack se afla lista de variabile si cuvantul "int". Functia scoate se pe 
+stack variabilele si le stocheza in varList, iar pe stiva va ramane doar "int".
+	
+	2.FUNCTIA solve_assignment()
+	Functia este apelata cand se intalneste simbolul ";", iar conditiile pentru
+a apela varList() nu sunt indeplinite. Inseamna ca ne aflam la finalul unui
+statement de forma "<Var> = <AExpr>;", iar pe stiva se afla elementele ce formeaza
+o expresie aritmetica, simbolul "=" si o variabila (de la top spre bottom).  	
+Extragem ce este pe stiva pana intalnim "=" si stocam elementele expresiei
+aritmentice intr-un ArrayList pe care il inversam, apoi extragem de pe stack
+"=" si variabila pentru a adauga ulterior o singura expresie pe stack de tipul
+AssignmentNode ai carei parametrii sunt variabila extrasa si expresia aritmetica
+comasata intr-o expresie dupa cum urmeaza. Am folosit doua stive, una pentru 
+operatori si una pentru operanzi pentru a rezolva expresia aritmetica, iar 
+in functie de gradul de precedenta al operatorilor "+" si "/" alegeam daca se 
+creeaza o expresie de tipul PlusNode sau DivNode.
+
+	3.FUNCTIA solve_bracket()
+	Este apelata cand se intalneste simbolul ")". Acest lucru inseamna ca pe stack
+se alfa elementele din interiorul unei paranteze. Acestea sunt extrase de pe stack
+pana se intalneste "(", iar functia returneza o expresie de tipul BracketNode ce
+este adaugata pe stiva in locul tuturor celorlalte elemente din paranteza.
+Pe principiul descris la functia anterioara expresia din interiorul parantezelor
+este rezolvata tinandu-se cont de precedenta operatorilor si cu ajutorul a doua
+stive. De aceasta data se pot intalni mai multe tipuri de operatori( +, /, >, &&, !).
+
+	4.FUNCTIA solve_block()
+	Este apelata cand se intalneste simbolul "}", ceea ce inseamna ca am ajuns la
+finalul unui block. Se extrag expresiile de pe stack si sunt puse pe alta stiva
+auxiliara pana cand se intalneste "{". Pe stiva auxiliara vom avea acum elementele
+din block-ul respectiv pe care le grupam in statementuri de diferite tipuri in 
+functie de cuvintele cheie intalnite. La final, expresiile din block sunt grupate
+in expresii de tipul SequenceNode, iar functia returneaza o expresie de tipul
+BlockNode care este pusa pe stack.
+	
+	5.FUNCTIA build_tree()
+	Este apelata cand s-a ajuns la finalul fisierului de input. Acest lucru
+inseamna ca pe stack se afla doar statement-uri si simbolul "int". Astfel, pana cand
+stiva va fi goala se grupeaza statement-urile doua cate doua in expresii de tipul
+SequenceNode, iar daca s-a ajuns la "int" se formeaza expresia finala ce contine 
+arborele de parsare al programului cu ajutorul clasei MainNode. In acest moment
+stiva va contine un singur element, o expresie de tipul MainNode care este 
+afisata cu ajutorul metodelor show() implemetate in fiecare dintre clasele ce
+implementeaza interfata Expression.
+ 
